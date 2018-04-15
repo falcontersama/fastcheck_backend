@@ -1,0 +1,8 @@
+{
+    "dependencies": {
+        "aws-sdk": "^2.224.1",
+        "fs": "0.0.1-security",
+        "node-uuid": ">= 1.4.1",
+        "speaker": "^0.4.1"
+    }
+}
