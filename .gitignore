@@ -1,3 +1,4 @@
 config.js
-facesCollection/*
+/facesCollection
 uploads
+/node_modules
