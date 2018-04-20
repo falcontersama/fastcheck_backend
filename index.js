@@ -22,6 +22,7 @@ let params = {
     'VoiceId': 'Amy'
 }
 
+
 Polly.synthesizeSpeech(params, (err, data) => {
     if (err) {
         console.log(err.code)
