@@ -119,35 +119,50 @@ async function calling(id, next) {
       next({ Status: "SUCCEEDED", Results: person });
     } else if (dataset.JobStatus === "IN_PROGRESS") {
       next({ Status: "IN_PROGRESS" });
-    } else next({ Status: "FAILED" });
+    } else {
+      next({ Status: "FAILED" });
+    }
   } catch (err) {
     next({ Status: "FAILED" });
   }
 }
 
-function generateVoice() {
-  Polly.synthesizeSpeech(
-    {
-      Text: "Here is a list of students who attend class",
-      OutputFormat: "mp3",
-      VoiceId: "Amy"
-    },
-    function(err, data) {
-      if (err) {
-        console.log(err.code);
-      } else if (data) {
-        if (data.AudioStream instanceof Buffer) {
-          fs.writeFile("./speech.mp3", data.AudioStream, function(err) {
-            if (err) {
-              return console.log(err);
-            }
-            console.log("The file was saved!");
-          });
+function generateLine(studentList) {
+  var line = "";
+  for (var key in studentList) {
+    line += key + " is " + studentList[key] + ",";
+  }
+  return line;
+}
+
+function generateVoice(data) {
+  console.log("Generating Voice");
+  if (data.Status === "SUCCEEDED") {
+    var voiceLine =
+      "Here is a list of students who attend class," +
+      generateLine(data.StatusList);
+    Polly.synthesizeSpeech(
+      {
+        Text: voiceLine,
+        OutputFormat: "mp3",
+        VoiceId: "Amy"
+      },
+      function(err, data) {
+        if (err) {
+          console.log(err.code);
+        } else if (data) {
+          if (data.AudioStream instanceof Buffer) {
+            fs.writeFile("./speech.mp3", data.AudioStream, function(err) {
+              if (err) {
+                return console.log(err);
+              }
+              return console.log(voiceLine);
+            });
+          }
         }
-        console.log(data);
       }
-    }
-  );
+    );
+  } else return console.log(data.Status);
 }
 
 function getStudentList() {
@@ -161,12 +176,15 @@ function getStudentList() {
   return studentList;
 }
 
-function checkStudentStatus(data) {
-  var studentList = getStudentList();
-  for (var i = 0; i < data.length; i++) {
-    studentList[data[i]] = "present";
-  }
-  return studentList;
+async function checkStudentStatus(data, next) {
+  if (data.Status === "SUCCEEDED") {
+    console.log("Matching Faces");
+    var studentList = await getStudentList();
+    for (var i = 0; i < data.Results.length; i++) {
+      studentList[data.Results[i]] = "present";
+    }
+    next({ Status: data.Status, StatusList: studentList });
+  } else next({ Status: data.Status });
 }
 
 app.post("/upload", upload.single("video"), function(req, res, next) {
@@ -175,8 +193,11 @@ app.post("/upload", upload.single("video"), function(req, res, next) {
 });
 
 app.get("/result/:id", function(req, res, next) {
-  calling(req.param("id"), function(data) {
-    res.send(checkStudentStatus(data.Results));
+  calling(req.param("id"), function(data, next) {
+    checkStudentStatus(data, function(lst) {
+      generateVoice(lst);
+      res.send(lst);
+    });
   });
 });
 
