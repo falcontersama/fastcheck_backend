@@ -30,7 +30,7 @@ Create IAM user with these user permission
 
 Then config your IAM, SNS, SQS  via these tutorials [link](https://docs.aws.amazon.com/rekognition/latest/dg/video-analyzing-with-sqs.html) , [link](https://docs.aws.amazon.com/rekognition/latest/dg/api-video-roles.html)
 
-Create the `config.js` file with your settings base on 'config_template.js'
+Create the `config.js` file with your settings base on `config_template.js`
 
 ## Running the project
 
@@ -43,6 +43,9 @@ Then to start after:
     node index.js
 
 Next, you go to http://localhost:5555/ in your browser you'll see a simple form for uploading an video.
+
 After video is uploaded, you will see the status of the analysis progress.
-You should refresh the browser until you get 'SUCCEEDED' status.
-Finally, you should see the analysis result and get 'speech.mp3' file on project's root folder.
+
+You should refresh the browser until you get `SUCCEEDED` status.
+
+Finally, you should see the analysis result and get `speech.mp3` file on project's root folder.
