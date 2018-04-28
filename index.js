@@ -24,8 +24,8 @@ const port = process.env.PORT || 5555;
 const d = new Date();
 const n = d.getTime();
 
-const cors = require("cors");
-app.use(cors());
+// const cors = require("cors");
+// app.use(cors());
 
 function uploadVideo(uploadfile, filename) {
   return s3
@@ -143,12 +143,8 @@ function generateLine(studentList) {
   return line;
 }
 
-<<<<<<< HEAD
-function generateVoice(data) {
-=======
 function generateVoice(data, res) {
   console.log("Generating Voice");
->>>>>>> 83e12cce286dca84655426cd744b4207f813cbc9
   if (data.Status === "SUCCEEDED") {
     var voiceLine =
       "Here is a list of students who attend class," +
@@ -165,8 +161,7 @@ function generateVoice(data, res) {
         } else if (data) {
           
           if (data.AudioStream instanceof Buffer) {
-            //console.log(data.AudioStream)
-            fs.writeFile("../fastcheck_front/public/speech.mp3", data.AudioStream, function(err) {
+            fs.writeFile("./speech.mp3", data.AudioStream, function(err) {
               if (err) {
                 return console.log(err);
               } else {
@@ -213,14 +208,7 @@ app.get("/result/:id", function(req, res, next) {
   calling(req.param("id"), function(data, next) {
     console.log(data)
     checkStudentStatus(data, function(lst) {
-<<<<<<< HEAD
-      song = generateVoice(lst);
-      console.log("check")
-      console.log(song)
-      res.send(lst);
-=======
       generateVoice(lst, res);
->>>>>>> 83e12cce286dca84655426cd744b4207f813cbc9
     });
   });
 });
