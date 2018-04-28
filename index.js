@@ -159,7 +159,6 @@ function generateVoice(data) {
           
           if (data.AudioStream instanceof Buffer) {
             //console.log(data.AudioStream)
-            return data.AudioStream()
             fs.writeFile("../fastcheck_front/public/speech.mp3", data.AudioStream, function(err) {
               if (err) {
                 return console.log(err);
