@@ -145,36 +145,33 @@ function generateLine(studentList) {
 
 function generateVoice(data, res) {
   console.log("Generating Voice");
-  if (data.Status === "SUCCEEDED") {
-    var voiceLine =
-      "Here is a list of students who attend class," +
-      generateLine(data.StatusList);
-    Polly.synthesizeSpeech(
-      {
-        Text: voiceLine,
-        OutputFormat: "mp3",
-        VoiceId: "Amy"
-      },
-      function(err, data) {
-        if (err) {
-          console.log(err.code);
-        } else if (data) {
-          
-          if (data.AudioStream instanceof Buffer) {
-            fs.writeFile("./speech.mp3", data.AudioStream, function(err) {
-              if (err) {
-                return console.log(err);
-              } else {
-                console.log("Sending Voice");
-                var speechFile = fs.createReadStream("./speech.mp3");
-                return speechFile.pipe(res);
-              }
-            });
-          }
+  var voiceLine =
+    "Here is a list of students who attend class," +
+    generateLine(data.StatusList);
+  Polly.synthesizeSpeech(
+    {
+      Text: voiceLine,
+      OutputFormat: "mp3",
+      VoiceId: "Amy"
+    },
+    function(err, data) {
+      if (err) {
+        console.log(err.code);
+      } else if (data) {
+        if (data.AudioStream instanceof Buffer) {
+          fs.writeFile("./speech.mp3", data.AudioStream, function(err) {
+            if (err) {
+              return console.log(err);
+            } else {
+              console.log("Sending Voice");
+              var speechFile = fs.createReadStream("./speech.mp3");
+              return speechFile.pipe(res);
+            }
+          });
         }
       }
-    );
-  } else return res.send(data.Status);
+    }
+  );
 }
 
 function getStudentList() {
@@ -208,9 +205,13 @@ app.get("/result/:id", function(req, res, next) {
   calling(req.param("id"), function(data, next) {
     console.log(data)
     checkStudentStatus(data, function(lst) {
-      generateVoice(lst, res);
+      res.json(lst);
     });
   });
+});
+
+app.get("/result/getvoice", function(req, res, next) {
+  generateVoice(req, res);
 });
 
 app.listen(port, function() {
