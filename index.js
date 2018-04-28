@@ -4,7 +4,9 @@ const AWS = require("aws-sdk");
 AWS.config.region = config.region;
 const express = require("express");
 const app = express();
+const cors = require("cors");
 app.use(express.static("public"));
+app.use(cors());
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 const fs = require("fs-extra");
@@ -135,7 +137,7 @@ function generateLine(studentList) {
   return line;
 }
 
-function generateVoice(data) {
+function generateVoice(data, res) {
   console.log("Generating Voice");
   if (data.Status === "SUCCEEDED") {
     var voiceLine =
@@ -155,14 +157,17 @@ function generateVoice(data) {
             fs.writeFile("./speech.mp3", data.AudioStream, function(err) {
               if (err) {
                 return console.log(err);
+              } else {
+                console.log("Sending Voice");
+                var speechFile = fs.createReadStream("./speech.mp3");
+                return speechFile.pipe(res);
               }
-              return console.log(voiceLine);
             });
           }
         }
       }
     );
-  } else return console.log(data.Status);
+  } else return res.send(data.Status);
 }
 
 function getStudentList() {
@@ -195,8 +200,7 @@ app.post("/upload", upload.single("video"), function(req, res, next) {
 app.get("/result/:id", function(req, res, next) {
   calling(req.param("id"), function(data, next) {
     checkStudentStatus(data, function(lst) {
-      generateVoice(lst);
-      res.send(lst);
+      generateVoice(lst, res);
     });
   });
 });
