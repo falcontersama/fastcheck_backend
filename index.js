@@ -23,6 +23,7 @@ const Stream = require("stream");
 const port = process.env.PORT || 5555;
 const d = new Date();
 const n = d.getTime();
+var listOfstatus;
 
 function uploadVideo(uploadfile, filename) {
   return s3
@@ -137,11 +138,11 @@ function generateLine(studentList) {
   return line;
 }
 
-function generateVoice(data, res) {
+function generateVoice(res) {
   console.log("Generating Voice");
   var voiceLine =
     "Here is a list of students who attend class," +
-    generateLine(data.StatusList);
+    generateLine(listOfstatus);
   Polly.synthesizeSpeech(
     {
       Text: voiceLine,
@@ -186,6 +187,7 @@ async function checkStudentStatus(data, next) {
     for (var i = 0; i < data.Results.length; i++) {
       studentList[data.Results[i]] = "present";
     }
+    listOfstatus = studentList;
     next({ Status: data.Status, StatusList: studentList });
   } else next({ Status: data.Status });
 }
@@ -203,8 +205,8 @@ app.get("/result/:id", function(req, res, next) {
   });
 });
 
-app.get("/result/getvoice", function(req, res, next) {
-  generateVoice(req, res);
+app.get("/getvoice", function(req, res, next) {
+  generateVoice(res);
 });
 
 app.listen(port, function() {
