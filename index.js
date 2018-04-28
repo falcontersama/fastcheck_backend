@@ -22,6 +22,9 @@ const port = process.env.PORT || 5555;
 const d = new Date();
 const n = d.getTime();
 
+const cors = require("cors");
+app.use(cors());
+
 function uploadVideo(uploadfile, filename) {
   return s3
     .upload({
@@ -91,8 +94,10 @@ function getUniquePersons(dataset) {
   var seen = new Set();
   var uniquePersons = [];
   for (var i = 0; i < dataset.Persons.length; i++) {
+    console.log(dataset.Persons[i])
     if (dataset.Persons[i].hasOwnProperty("FaceMatches")) {
       if (dataset.Persons[i].FaceMatches.length > 0) {
+        console.log(dataset.Persons[i].FaceMatches[0].Face.ExternalImageId)
         if (seen.has(dataset.Persons[i].FaceMatches[0].Face.ExternalImageId))
           continue;
         seen.add(dataset.Persons[i].FaceMatches[0].Face.ExternalImageId);
@@ -108,7 +113,8 @@ function getUniquePersons(dataset) {
 async function uploading(uploadfile, originalname, res) {
   const uploadresult = await uploadVideo(uploadfile, originalname);
   const id = await startSearch(uploadresult);
-  res.redirect("/result/" + id.JobId);
+  //res.redirect("/result/" + id.JobId);
+  res.send("/result/" + id.JobId)
 }
 
 async function calling(id, next) {
@@ -136,7 +142,6 @@ function generateLine(studentList) {
 }
 
 function generateVoice(data) {
-  console.log("Generating Voice");
   if (data.Status === "SUCCEEDED") {
     var voiceLine =
       "Here is a list of students who attend class," +
@@ -151,8 +156,11 @@ function generateVoice(data) {
         if (err) {
           console.log(err.code);
         } else if (data) {
+          
           if (data.AudioStream instanceof Buffer) {
-            fs.writeFile("./speech.mp3", data.AudioStream, function(err) {
+            //console.log(data.AudioStream)
+            return data.AudioStream()
+            fs.writeFile("../fastcheck_front/public/speech.mp3", data.AudioStream, function(err) {
               if (err) {
                 return console.log(err);
               }
@@ -194,13 +202,17 @@ app.post("/upload", upload.single("video"), function(req, res, next) {
 
 app.get("/result/:id", function(req, res, next) {
   calling(req.param("id"), function(data, next) {
+    console.log(data)
     checkStudentStatus(data, function(lst) {
-      generateVoice(lst);
+      song = generateVoice(lst);
+      console.log("check")
+      console.log(song)
       res.send(lst);
     });
   });
 });
 
 app.listen(port, function() {
+  rekognition.createCollection({CollectionId: config.collectionName});
   console.log(`Listening on port ${port}`);
 });
