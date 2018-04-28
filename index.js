@@ -21,8 +21,8 @@ const Polly = new AWS.Polly({
 });
 const Stream = require("stream");
 const port = process.env.PORT || 5555;
-const d = new Date();
-const n = d.getTime();
+var d = new Date();
+var n = d.getTime();
 var listOfstatus;
 
 function uploadVideo(uploadfile, filename) {
@@ -109,6 +109,8 @@ function getUniquePersons(dataset) {
 }
 
 async function uploading(uploadfile, originalname, res) {
+  d = new Date();
+  n = d.getTime();
   const uploadresult = await uploadVideo(uploadfile, originalname);
   const id = await startSearch(uploadresult);
   res.redirect("/result/" + id.JobId);
@@ -141,8 +143,7 @@ function generateLine(studentList) {
 function generateVoice(res) {
   console.log("Generating Voice");
   var voiceLine =
-    "Here is a list of students who attend class," +
-    generateLine(listOfstatus);
+    "Here is a list of students who attend class," + generateLine(listOfstatus);
   Polly.synthesizeSpeech(
     {
       Text: voiceLine,
