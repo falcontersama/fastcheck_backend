@@ -22,6 +22,7 @@ to connect to AWS. You can do this by creating a file named "credentials" at ~/.
 
 Create IAM user with these user permission
 
+    - AmazonSNSFullAccess
 	- AmazonSQSFullAccess
 	- AmazonS3FullAccess
 	- AmazonRekognitionFullAccess
